@@ -105,6 +105,7 @@ function xmldb_main_install() {
         throw new moodle_exception('generalexceptionmessage', 'error', '', 'Can not create default course category, categories already exist.');
     }
     $cat = new stdClass();
+    $cat->parent       = null;
     $cat->name         = get_string('miscellaneous');
     $cat->depth        = 1;
     $cat->sortorder    = MAX_COURSES_IN_CATEGORY;
@@ -134,7 +135,24 @@ function xmldb_main_install() {
     foreach($defaults as $key => $value) {
         set_config($key, $value);
     }
-
+    
+    // Initial insert of mnet applications info
+    $mnet_app = new stdClass();
+    $mnet_app->name              = 'moodle';
+    $mnet_app->display_name      = 'Moodle';
+    $mnet_app->xmlrpc_server_url = '/mnet/xmlrpc/server.php';
+    $mnet_app->sso_land_url      = '/auth/mnet/land.php';
+    $mnet_app->sso_jump_url      = '/auth/mnet/jump.php';
+    $moodleapplicationid = $DB->insert_record('mnet_application', $mnet_app);
+    
+    $mnet_app = new stdClass();
+    $mnet_app->name              = 'mahara';
+    $mnet_app->display_name      = 'Mahara';
+    $mnet_app->xmlrpc_server_url = '/api/xmlrpc/server.php';
+    $mnet_app->sso_land_url      = '/auth/xmlrpc/land.php';
+    $mnet_app->sso_jump_url      = '/auth/xmlrpc/jump.php';
+    $DB->insert_record('mnet_application', $mnet_app);
+    
 
     // Bootstrap mnet
     $mnethost = new stdClass();
@@ -160,23 +178,7 @@ function xmldb_main_install() {
     $mnetid = $DB->insert_record('mnet_host', $mnethost);
     set_config('mnet_localhost_id', $mnetid);
 
-    // Initial insert of mnet applications info
-    $mnet_app = new stdClass();
-    $mnet_app->name              = 'moodle';
-    $mnet_app->display_name      = 'Moodle';
-    $mnet_app->xmlrpc_server_url = '/mnet/xmlrpc/server.php';
-    $mnet_app->sso_land_url      = '/auth/mnet/land.php';
-    $mnet_app->sso_jump_url      = '/auth/mnet/jump.php';
-    $moodleapplicationid = $DB->insert_record('mnet_application', $mnet_app);
-
-    $mnet_app = new stdClass();
-    $mnet_app->name              = 'mahara';
-    $mnet_app->display_name      = 'Mahara';
-    $mnet_app->xmlrpc_server_url = '/api/xmlrpc/server.php';
-    $mnet_app->sso_land_url      = '/auth/xmlrpc/land.php';
-    $mnet_app->sso_jump_url      = '/auth/xmlrpc/jump.php';
-    $DB->insert_record('mnet_application', $mnet_app);
-
+    
     // Set up the probably-to-be-removed-soon 'All hosts' record
     $mnetallhosts                     = new stdClass();
     $mnetallhosts->wwwroot            = '';
